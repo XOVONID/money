@@ -1,57 +1,51 @@
-# money
-money
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>存錢筒 EAN13 條碼工具</title>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input { margin: 5px; padding: 5px; }
-    #barcode { margin-top: 20px; }
-  </style>
-</head>
-<body>
-  <h2>存錢筒 EAN13 條碼工具</h2>
+ import random
+import time
+import math
+import platform
 
-  <label>掃描/輸入條碼（13碼）：
-    <input type="text" id="barcodeInput" maxlength="13" />
-  </label><br>
+# 跨平台聲音處理
+def play_beep():
+    try:
+        if platform.system() == "Windows":
+            import winsound
+            winsound.Beep(1000, 500)
+        else:
+            import os
+            os.system('play -nq -t alsa synth 0.5 sine 1000')  # Linux/macOS 可用 sox
+    except Exception as e:
+        print(f"(無法播放聲音: {e})")
 
-  <label>要存的金額（元）：
-    <input type="number" id="depositInput" />
-  </label><br>
+# 模擬地震數據
+def read_accelerometer():
+    if random.random() < 0.95:
+        return random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1), random.uniform(0.9, 1.1)
+    else:
+        return random.uniform(-3, 3), random.uniform(-3, 3), random.uniform(-3, 3)
 
-  <button onclick="updateBalance()">更新餘額並產生新條碼</button>
+def vector_magnitude(x, y, z):
+    return math.sqrt(x**2 + y**2 + z**2)
 
-  <h3>新條碼：</h3>
-  <svg id="barcode"></svg>
+def trigger_alarm():
+    print("⚠️⚠️⚠️ 地震警報！請立即避難 ⚠️⚠️⚠️")
+    for _ in range(3):
+        play_beep()
+        time.sleep(0.2)
 
-  <script>
-    function updateBalance() {
-      const code = document.getElementById("barcodeInput").value;
-      const deposit = parseInt(document.getElementById("depositInput").value);
+def main():
+    threshold = 1.5
+    print("🛰️ 地震偵測器已啟動... (按 Ctrl+C 結束)")
+    try:
+        while True:
+            x, y, z = read_accelerometer()
+            magnitude = vector_magnitude(x, y, z)
+            print(f"目前加速度值: {magnitude:.2f} g")
+            if magnitude > threshold:
+                trigger_alarm()
+            else:
+                print("✅ 正常")
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\n已停止監測。")
 
-      if (code.length !== 13 || isNaN(deposit)) {
-        alert("請輸入正確的條碼與金額");
-        return;
-      }
-
-      const accountId = code.substring(0, 2);
-      const currentBalance = parseInt(code.substring(2, 11));
-      const newBalance = currentBalance + deposit;
-
-      const newData = accountId + String(newBalance).padStart(9, "0");
-
-      JsBarcode("#barcode", newData, {
-        format: "ean13",
-        lineColor: "#000",
-        width: 2,
-        height: 100,
-        displayValue: true
-      });
-    }
-  </script>
-</body>
-</html>
+if __name__ == "__main__":
+    main()
